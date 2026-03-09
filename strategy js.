@@ -1,0 +1,29 @@
+// MOTEUR DE CONFLUENCE INSTITUTIONNELLE
+export const analyzeMarket = (data) => {
+  const { cotBias, retailSentiment, orderBookLevels, currentPrice } = data;
+
+  // 1. ANALYSE COT (Direction des Banques)
+  const isCotBullish = cotBias === 'LONG';
+
+  // 2. ANALYSE SENTIMENT (Contrarien)
+  // Si le retail est trop à l'achat (>70%), on cherche à vendre
+  const isRetailLong = retailSentiment > 70;
+
+  // 3. DÉTECTION GOLDEN ZONE (Order Book)
+  // On cherche un pic de liquidité à moins de 10 pips du prix
+  const goldenZone = orderBookLevels.find(level => 
+    Math.abs(level.price - currentPrice) < 0.10 && level.volume > 80
+  );
+
+  // LOGIQUE DE SIGNAL SNIPER
+  if (goldenZone) {
+    if (isCotBullish && !isRetailLong) {
+      return { type: 'BUY', zone: goldenZone.price, confidence: 'HIGH' };
+    } 
+    if (!isCotBullish && isRetailLong) {
+      return { type: 'SELL', zone: goldenZone.price, confidence: 'HIGH' };
+    }
+  }
+
+  return null;
+};
