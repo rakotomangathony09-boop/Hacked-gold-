@@ -1,16 +1,12 @@
 {
-  "name": "vpro-terminal-sniper",
+  "name": "hacked-gold-vpro",
   "version": "43.4.0",
-  "private": true,
+  "main": "server.js",
   "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "lucide-react": "^0.284.0",
-    "axios": "^1.5.0",
-    "recharts": "^2.8.0"
+    "express": "^4.18.2",
+    "path": "^0.12.7"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build"
+    "start": "node server.js"
   }
 }
