@@ -1,0 +1,72 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { analyzeMarket } from './strategy';
+import { Zap, Target, Bell, ShieldCheck, Volume2, VolumeX } from 'lucide-react';
+
+const VProTerminal = () => {
+  const [price, setPrice] = useState(2158.45);
+  const [signal, setSignal] = useState(null);
+  const [prepAlert, setPrepAlert] = useState(null);
+  const [isMuted, setIsMuted] = useState(false);
+  const audioPrep = useRef(new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3'));
+
+  useEffect(() => {
+    const engine = setInterval(() => {
+      const now = new Date();
+      if (now.getDay() === 0 || now.getDay() === 6) return; // Week-end OFF
+
+      // Simulation du flux réel (à lier à votre API Oanda)
+      const newPrice = price + (Math.random() - 0.5) * 0.2;
+      setPrice(newPrice);
+
+      // Appel de la stratégie réelle
+      const check = analyzeMarket({
+        cotBias: 'LONG', // Donnée réelle issue du rapport CFTC
+        retailSentiment: 82, // Donnée réelle Retail
+        orderBookLevels: [{price: 2160.00, volume: 95}], 
+        currentPrice: newPrice
+      });
+
+      if (check && !prepAlert && !signal) {
+        if (!isMuted) audioPrep.current.play();
+        setPrepAlert(60);
+      }
+    }, 1000);
+    return () => clearInterval(engine);
+  }, [price, prepAlert, signal]);
+
+  return (
+    <div className="min-h-screen bg-[#020408] text-white p-6 font-sans uppercase">
+      <div className="max-w-xl mx-auto border border-slate-800 rounded-[3rem] p-10 bg-[#0a0d14]">
+        <div className="flex justify-between items-center mb-10">
+          <div className="flex items-center gap-2"><Zap className="text-blue-500 animate-pulse" /> <span className="font-black text-xs">V-PRO REAL-TIME</span></div>
+          <button onClick={() => setIsMuted(!isMuted)}>{isMuted ? <VolumeX size={20}/> : <Volume2 size={20}/>}</button>
+        </div>
+        
+        <div className="text-center mb-10">
+          <span className="text-[10px] text-slate-500 tracking-[0.5em]">XAUUSD LIVE</span>
+          <div className="text-7xl font-black font-mono tracking-tighter tabular-nums">{price.toFixed(2)}</div>
+        </div>
+
+        {prepAlert && (
+          <div className="bg-blue-600 p-6 rounded-2xl animate-pulse flex justify-between items-center mb-6">
+            <Bell className="animate-bounce" /> <span className="font-black">PRÉPARATION GOLDEN ZONE</span>
+            <span className="text-3xl font-mono">{prepAlert}s</span>
+          </div>
+        )}
+
+        {signal && (
+          <div className="border-2 border-green-500 p-6 rounded-2xl bg-green-500/10">
+            <div className="text-center font-black text-xl mb-4">SNIPER {signal.type} CONFIRMED</div>
+            <div className="grid grid-cols-3 gap-2 text-center text-[10px] font-bold">
+              <div className="bg-black p-3 rounded">ENTRY<br/><span className="text-lg font-mono">{signal.entry}</span></div>
+              <div className="bg-red-900/40 p-3 rounded text-red-400">SL<br/><span className="text-lg font-mono">{signal.sl}</span></div>
+              <div className="bg-green-900/40 p-3 rounded text-green-400">TP<br/><span className="text-lg font-mono">{signal.tp}</span></div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default VProTerminal;
