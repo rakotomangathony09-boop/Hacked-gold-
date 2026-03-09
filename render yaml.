@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: vpro-sniper-terminal
+    env: static
+    buildCommand: npm run build
+    staticPublishPath: ./build
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
